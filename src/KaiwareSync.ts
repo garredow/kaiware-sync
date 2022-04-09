@@ -21,8 +21,6 @@ export class KaiwareSync {
       authRedirectUri: `https://${options.appId.replace(/[^\w-]/gm, '_')}.app.kaiware.io/oauth`,
       ...options,
     };
-
-    console.log('options', this.options);
   }
 
   async get<T>(): Promise<ApiResponse<T>> {
