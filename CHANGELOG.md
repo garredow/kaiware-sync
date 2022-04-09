@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/garredow/kaiware-sync/compare/v2.1.0...v2.2.0) (2022-04-09)
+
+
+### Features
+
+* refactor and clean up ([2f27bac](https://github.com/garredow/kaiware-sync/commit/2f27bace4d83dafe6e8a39e54ec02e2568bea935))
+
 # [2.1.0](https://github.com/garredow/kaiware-sync/compare/v2.0.1...v2.1.0) (2022-04-09)
 
 
