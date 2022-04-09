@@ -9,7 +9,7 @@ type Options = {
   authRedirectUri: string;
 };
 
-export default class KaiwareSync {
+export class KaiwareSync {
   options: Options;
 
   constructor(options: Partial<Options> & Pick<Options, 'appId'>) {
@@ -18,9 +18,11 @@ export default class KaiwareSync {
       authClientId: 'pEpQbBNAnl5RDBXiGS7BXW3UZrVNJMsL',
       authDomain: 'https://kaiware-sync-dev.us.auth0.com',
       authAudience: 'https://sync.kaiware.io/api',
-      authRedirectUri: `https://${options.appId}.app.kaiware.io/oauth`,
+      authRedirectUri: `https://${options.appId.replace(/[^\w-]/gm, '_')}.app.kaiware.io/oauth`,
       ...options,
     };
+
+    console.log('options', this.options);
   }
 
   get<T>(): Promise<ApiResponse<T>> {
