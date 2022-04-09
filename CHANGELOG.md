@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/garredow/kaiware-sync/compare/v2.0.0...v2.0.1) (2022-04-09)
+
+
+### Bug Fixes
+
+* export named class ([f6b10ab](https://github.com/garredow/kaiware-sync/commit/f6b10abaa875b50087681fcd0feb3df4e4d9aa8a))
+
 # [2.0.0](https://github.com/garredow/kaiware-sync/compare/v1.0.0...v2.0.0) (2022-04-09)
 
 
