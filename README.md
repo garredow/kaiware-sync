@@ -1,27 +1,26 @@
-# Kaiware Settings Sync
+# Kaiware Sync
 
-[![CircleCI](https://circleci.com/gh/garredow/kass-lib/tree/main.svg?style=svg)](https://circleci.com/gh/garredow/kass-lib/tree/main)
-[![npm](https://img.shields.io/npm/v/kass-lib.svg)](https://www.npmjs.com/package/kass-lib)
+[![CircleCI](https://circleci.com/gh/garredow/kaiware-sync/tree/main.svg?style=svg)](https://circleci.com/gh/garredow/kaiware-sync/tree/main)
+[![npm](https://img.shields.io/npm/v/kaiware-sync.svg)](https://www.npmjs.com/package/kaiware-sync)
 
-Kaiware Settings Sync, or Kass for short, is a web service to sync app settings across devices.
+Kaiware Sync is a web service to sync app settings across devices.
 
 ## Examples
 
 ```ts
-// Initialize Kass
-const kass = new Kass({
-  appId: 'com.garredow.kass-demo',
-  baseUrl: 'https://kass.kaiware.io',
+// Initialize
+const sync = new KaiwareSync({
+  appId: 'com.garredow.kaiware-sync-demo',
 });
 
 // Store app settings in the cloud
-await kass.set({ theme: 'dark', accentColor: 'red' });
+await sync.set({ theme: 'dark', accentColor: 'red' });
 
 // Fetch app settings
-const settings = await kass.get();
+const settings = await sync.get();
 
 // Delete app settings
-await kass.delete();
+await sync.delete();
 ```
 
-To see an example of an app using Kass, including logging in, check out [kass-demo](https://github.com/garredow/kass-demo).
+To see an example of an app using Kaiware Sync, including logging in, check out [kaiware-sync-demo](https://github.com/garredow/kaiware-sync-demo).
