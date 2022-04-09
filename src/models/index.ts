@@ -1,2 +1,2 @@
 export * from './ApiResponse';
-export * from './Token';
+export * from './Tokens';

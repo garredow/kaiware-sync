@@ -1,4 +1,4 @@
-import { ApiResponse, Token } from './models';
+import { ApiResponse, Tokens } from './models';
 
 type Options = {
   appId: string;
@@ -25,8 +25,8 @@ export class KaiwareSync {
     console.log('options', this.options);
   }
 
-  get<T>(): Promise<ApiResponse<T>> {
-    const token = this.getTokenFromStorage();
+  async get<T>(): Promise<ApiResponse<T>> {
+    const token = await this.getTokens();
 
     return new Promise((resolve, reject) => {
       const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
@@ -38,13 +38,13 @@ export class KaiwareSync {
         reject();
       });
       xhr.open('GET', `${this.options.baseUrl}/settings/${this.options.appId}`);
-      xhr.setRequestHeader('Authorization', token.access);
+      xhr.setRequestHeader('Authorization', token.accessToken);
       xhr.send();
     });
   }
 
-  set<T>(data: T): Promise<ApiResponse<T>> {
-    const token = this.getTokenFromStorage();
+  async set<T>(data: T): Promise<ApiResponse<T>> {
+    const token = await this.getTokens();
 
     return new Promise((resolve, reject) => {
       const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
@@ -56,14 +56,14 @@ export class KaiwareSync {
         reject();
       });
       xhr.open('PUT', `${this.options.baseUrl}/settings/${this.options.appId}`);
-      xhr.setRequestHeader('Authorization', token.access);
+      xhr.setRequestHeader('Authorization', token.accessToken);
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(data as any);
     });
   }
 
-  delete(): Promise<void> {
-    const token = this.getTokenFromStorage();
+  async delete(): Promise<void> {
+    const token = await this.getTokens();
 
     return new Promise((resolve, reject) => {
       const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
@@ -75,7 +75,7 @@ export class KaiwareSync {
         reject();
       });
       xhr.open('DELETE', `${this.options.baseUrl}/settings/${this.options.appId}`);
-      xhr.setRequestHeader('Authorization', token.access);
+      xhr.setRequestHeader('Authorization', token.accessToken);
       xhr.send();
     });
   }
@@ -108,7 +108,7 @@ export class KaiwareSync {
   }
 
   async handleAuthCallback(): Promise<void> {
-    this.getTokenFromCode()
+    this.getTokensFromCode()
       .then((result) => {
         window.dispatchEvent(
           new CustomEvent('kaios-sync-tokens-success', {
@@ -123,17 +123,24 @@ export class KaiwareSync {
       });
   }
 
-  private getTokenFromStorage(): Token {
-    const token = JSON.parse(window.localStorage.getItem('kaios-sync__tokens') as string);
+  private async getTokens(): Promise<Tokens> {
+    let tokens: Tokens = JSON.parse(window.localStorage.getItem('kaios-sync__tokens') as string);
 
-    if (!token) {
+    if (!tokens) {
       throw new Error('No token found! You must sign in first.');
     }
 
-    return token;
+    if (tokens.expiresAt < Date.now() + 1_800_000) {
+      console.log(
+        `Token expires soon (${new Date(tokens.expiresAt).toISOString()}), refreshing...`
+      );
+      tokens = await this.refreshTokens(tokens.accessToken, tokens.refreshToken);
+    }
+
+    return tokens;
   }
 
-  private getTokenFromCode() {
+  private getTokensFromCode() {
     const code = location.search.split('?code=')[1];
 
     var body = new URLSearchParams();
@@ -149,6 +156,23 @@ export class KaiwareSync {
       xhr.open('POST', `${this.options.authDomain}/oauth/token`);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.send(body);
+    });
+  }
+
+  private refreshTokens(accessToken: string, refreshToken: string): Promise<Tokens> {
+    return new Promise((resolve, reject) => {
+      const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
+      xhr.addEventListener('load', () => resolve(JSON.parse(xhr.responseText)));
+      xhr.addEventListener('error', () => reject(new Error('Failed to refresh tokens')));
+      xhr.open('POST', `${this.options.baseUrl}/refresh`);
+      xhr.setRequestHeader('Authorization', accessToken);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.send(
+        JSON.stringify({
+          refreshToken,
+          clientId: this.options.authClientId,
+        })
+      );
     });
   }
 }
