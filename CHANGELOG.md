@@ -1,3 +1,11 @@
+# [2.1.0](https://github.com/garredow/kaiware-sync/compare/v2.0.1...v2.1.0) (2022-04-09)
+
+
+### Features
+
+* refresh token when expiring soon or expired ([13f7b67](https://github.com/garredow/kaiware-sync/commit/13f7b67c8cb8315ab9890d47041dc407ff2761b8))
+* **scopes:** add openid, profile, and email ([3750012](https://github.com/garredow/kaiware-sync/commit/375001258476c6da37b8bf49325e247437609f8e))
+
 ## [2.0.1](https://github.com/garredow/kaiware-sync/compare/v2.0.0...v2.0.1) (2022-04-09)
 
 
