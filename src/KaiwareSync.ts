@@ -1,16 +1,10 @@
-import { ApiResponse, Tokens } from './models';
-
-type Options = {
-  appId: string;
-  baseUrl: string;
-  authClientId: string;
-  authDomain: string;
-  authAudience: string;
-  authRedirectUri: string;
-};
+import { API } from './API';
+import { ApiResponse, Options } from './models';
+import { Tokens } from './Tokens';
 
 export class KaiwareSync {
   options: Options;
+  tokens: Tokens;
 
   constructor(options: Partial<Options> & Pick<Options, 'appId'>) {
     this.options = {
@@ -21,61 +15,20 @@ export class KaiwareSync {
       authRedirectUri: `https://${options.appId.replace(/[^\w-]/gm, '_')}.app.kaiware.io/oauth`,
       ...options,
     };
+
+    this.tokens = new Tokens(this.options);
   }
 
   async get<T>(): Promise<ApiResponse<T>> {
-    const token = await this.getTokens();
-
-    return new Promise((resolve, reject) => {
-      const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
-      xhr.addEventListener('load', () => {
-        resolve(JSON.parse(xhr.responseText));
-      });
-      xhr.addEventListener('error', () => {
-        console.log('ERROR', xhr);
-        reject();
-      });
-      xhr.open('GET', `${this.options.baseUrl}/settings/${this.options.appId}`);
-      xhr.setRequestHeader('Authorization', token.accessToken);
-      xhr.send();
-    });
+    return new API(this.options).get(`/data/${this.options.appId}`);
   }
 
   async set<T>(data: T): Promise<ApiResponse<T>> {
-    const token = await this.getTokens();
-
-    return new Promise((resolve, reject) => {
-      const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
-      xhr.addEventListener('load', () => {
-        resolve(JSON.parse(xhr.responseText));
-      });
-      xhr.addEventListener('error', () => {
-        console.log('ERROR', xhr);
-        reject();
-      });
-      xhr.open('PUT', `${this.options.baseUrl}/settings/${this.options.appId}`);
-      xhr.setRequestHeader('Authorization', token.accessToken);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send(data as any);
-    });
+    return new API(this.options).put(`/data/${this.options.appId}`, data);
   }
 
   async delete(): Promise<void> {
-    const token = await this.getTokens();
-
-    return new Promise((resolve, reject) => {
-      const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
-      xhr.addEventListener('load', () => {
-        resolve();
-      });
-      xhr.addEventListener('error', () => {
-        console.log('ERROR', xhr);
-        reject();
-      });
-      xhr.open('DELETE', `${this.options.baseUrl}/settings/${this.options.appId}`);
-      xhr.setRequestHeader('Authorization', token.accessToken);
-      xhr.send();
-    });
+    return new API(this.options).delete(`/data/${this.options.appId}`);
   }
 
   async signin(): Promise<void> {
@@ -89,14 +42,11 @@ export class KaiwareSync {
     return new Promise((resolve, reject) => {
       const windowRef = window.open(url.toString());
       windowRef?.addEventListener('kaios-sync-tokens-success', (ev: any) => {
-        window.localStorage.setItem(
-          'kaios-sync__tokens',
-          JSON.stringify({
-            access: ev.detail.access_token,
-            refresh: ev.detail.refresh_token,
-            expiresAt: Date.now() + ev.detail.expires_in * 1000,
-          })
-        );
+        this.tokens.set({
+          accessToken: ev.detail.access_token,
+          refreshToken: ev.detail.refresh_token,
+          expiresAt: Date.now() + ev.detail.expires_in * 1000,
+        });
         resolve();
       });
       windowRef?.addEventListener('kaios-sync-tokens-error', (ev: any) => {
@@ -105,8 +55,8 @@ export class KaiwareSync {
     });
   }
 
-  async handleAuthCallback(): Promise<void> {
-    this.getTokensFromCode()
+  handleAuthCallback(): Promise<void> {
+    return this.fetchTokensUsingCode()
       .then((result) => {
         window.dispatchEvent(
           new CustomEvent('kaios-sync-tokens-success', {
@@ -121,24 +71,7 @@ export class KaiwareSync {
       });
   }
 
-  private async getTokens(): Promise<Tokens> {
-    let tokens: Tokens = JSON.parse(window.localStorage.getItem('kaios-sync__tokens') as string);
-
-    if (!tokens) {
-      throw new Error('No token found! You must sign in first.');
-    }
-
-    if (tokens.expiresAt < Date.now() + 1_800_000) {
-      console.log(
-        `Token expires soon (${new Date(tokens.expiresAt).toISOString()}), refreshing...`
-      );
-      tokens = await this.refreshTokens(tokens.accessToken, tokens.refreshToken);
-    }
-
-    return tokens;
-  }
-
-  private getTokensFromCode() {
+  private fetchTokensUsingCode() {
     const code = location.search.split('?code=')[1];
 
     var body = new URLSearchParams();
@@ -154,23 +87,6 @@ export class KaiwareSync {
       xhr.open('POST', `${this.options.authDomain}/oauth/token`);
       xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
       xhr.send(body);
-    });
-  }
-
-  private refreshTokens(accessToken: string, refreshToken: string): Promise<Tokens> {
-    return new Promise((resolve, reject) => {
-      const xhr = new (XMLHttpRequest as any)({ mozSystem: true });
-      xhr.addEventListener('load', () => resolve(JSON.parse(xhr.responseText)));
-      xhr.addEventListener('error', () => reject(new Error('Failed to refresh tokens')));
-      xhr.open('POST', `${this.options.baseUrl}/refresh`);
-      xhr.setRequestHeader('Authorization', accessToken);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send(
-        JSON.stringify({
-          refreshToken,
-          clientId: this.options.authClientId,
-        })
-      );
     });
   }
 }
