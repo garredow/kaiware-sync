@@ -13,13 +13,16 @@ const sync = new KaiwareSync({
   appId: 'com.garredow.kaiware-sync-demo',
 });
 
-// Store app settings in the cloud
+// Opens a new window to the login screen
+await sync.signin();
+
+// Store app data in the cloud
 await sync.set({ theme: 'dark', accentColor: 'red' });
 
-// Fetch app settings
-const settings = await sync.get();
+// Fetch app data
+const data = await sync.get();
 
-// Delete app settings
+// Delete app data
 await sync.delete();
 ```
 
