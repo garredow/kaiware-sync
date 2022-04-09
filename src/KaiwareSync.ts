@@ -86,7 +86,7 @@ export class KaiwareSync {
     url.searchParams.append('client_id', this.options.authClientId);
     url.searchParams.append('audience', this.options.authAudience);
     url.searchParams.append('redirect_uri', this.options.authRedirectUri);
-    url.searchParams.append('scope', 'offline_access');
+    url.searchParams.append('scope', 'offline_access openid profile email');
 
     return new Promise((resolve, reject) => {
       const windowRef = window.open(url.toString());
