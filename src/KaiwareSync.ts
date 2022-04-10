@@ -9,10 +9,10 @@ export class KaiwareSync {
   constructor(options: Partial<Options> & Pick<Options, 'appId'>) {
     this.options = {
       baseUrl: 'https://sync.kaiware.io/api',
-      authClientId: 'pEpQbBNAnl5RDBXiGS7BXW3UZrVNJMsL',
-      authDomain: 'https://kaiware-sync-dev.us.auth0.com',
+      authClientId: 'H1RNKLDdrbj7TnmmBwIMJ3Nr9jMNOa0x',
+      authDomain: 'https://kaiware-dev.us.auth0.com',
       authAudience: 'https://sync.kaiware.io/api',
-      authRedirectUri: `https://${options.appId.replace(/[^\w-]/gm, '_')}.app.kaiware.io/oauth`,
+      authRedirectUri: `https://${options.appId.replace(/[^\w-]/gm, '_')}.sync.kaiware.io/oauth`,
       ...options,
     };
 
