@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/garredow/kaiware-sync/compare/v2.2.0...v2.3.0) (2022-04-10)
+
+
+### Features
+
+* **auth:** move to new auth0 tenant ([a4e717a](https://github.com/garredow/kaiware-sync/commit/a4e717a42fa1da415466bf71a3650a600823b241))
+
 # [2.2.0](https://github.com/garredow/kaiware-sync/compare/v2.1.0...v2.2.0) (2022-04-09)
 
 
